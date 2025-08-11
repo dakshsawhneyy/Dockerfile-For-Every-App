@@ -2,6 +2,11 @@ FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
+# Was present in original Dockerfile -- install g++ -- C++ compiler
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -11,6 +16,9 @@ COPY . .
 FROM python:3.12-slim
 
 WORKDIR /app
+
+# Enable unbuffered logging
+ENV PYTHONUNBUFFERED=1
 
 # Copy installed dependencies from builder
 COPY --from=builder /usr/local /usr/local
