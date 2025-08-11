@@ -1,0 +1,30 @@
+FROM golang:1.23-alpine AS builder
+
+WORKDIR /app
+
+# Copy go module files and download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+# Build the app
+RUN go build -o frontend .
+
+# * Stage 2
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /app/frontend .
+
+# Copy static files (templates and static folders)
+COPY --from=builder /app/templates ./templates
+COPY --from=builder /app/static ./static
+
+# Set env var for better error tracing
+ENV GOTRACEBACK=single
+
+EXPOSE 8080
+
+ENTRYPOINT ["./frontend"]
