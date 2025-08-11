@@ -1,0 +1,29 @@
+# Recommended image for java
+FROM eclipse-temurin:21.0.5_11-jdk AS builder
+
+WORKDIR /app
+
+# Copy Gradle config first
+COPY build.gradle gradlew ./    
+# Copy gradle folder
+COPY gradle gradle
+
+# download dependencies --no-daemon means don’t keep a background Gradle process running after the build.
+RUN chmod +x gradlew && ./gradlew downloadRepos --no-daemon
+
+COPY . .
+# Build runnable files -- without --no-daemon, it will spin up daemon during build step
+RUN ./gradlew installDist --no-daemon
+
+# Stage 2
+FROM eclipse-temurin:21-jre-alpine
+
+WORKDIR /app
+
+# only copy hipstershop instead of whole app
+COPY --from=builder /app/build/install/hipstershop /app
+
+EXPOSE 9555
+ENTRYPOINT ["/app/build/install/hipstershop/bin/AdService"]
+# or ENTRYPOINT ["/app/bin/AdService"]
+# hipstershop is <app-name> and AdService is <>
