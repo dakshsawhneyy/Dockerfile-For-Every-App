@@ -1,0 +1,23 @@
+FROM golang:1.23-alpine AS build
+
+WORKDIR /app
+
+# Copy go module files and download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+# Build the app
+RUN go build -o checkoutservice .
+
+# * Stage 2
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /app/checkoutservice ./
+
+EXPOSE 5050
+
+ENTRYPOINT ["./checkoutservice"]
