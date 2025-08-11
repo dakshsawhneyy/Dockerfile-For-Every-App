@@ -1,20 +1,23 @@
-FROM node:21 AS builder
+FROM node:20 AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --only=production
 
 COPY . .
 
-FROM node:21-alpine
-
-RUN apk add --no-cache curl bind-tools
+# Stage 2
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY --from=builder /app /app
+# Copy only production files
+COPY --from=builder /app/node_modules ./node_modules
+# copy specific files like server.js
+COPY --from=builder /app/*.js ./   
+COPY --from=builder /app/package*.json ./
 
-EXPOSE 4000
+EXPOSE 7000
 
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
