@@ -1,0 +1,25 @@
+FROM python:3.12-slim AS builder
+
+WORKDIR /app
+
+ENV VIRTUAL_ENV=/app/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY requirements.txt .
+
+RUN python3 -m venv $VIRTUAL_ENV
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY hello_world.py .
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+ENV VIRTUAL_ENV=/app/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY --from=builder $VIRTUAL_ENV $VIRTUAL_ENV
+COPY --from=builder /app/hello_world.py .
+
+CMD ["uvicorn", "hello_world:app", "--host", "0.0.0.0"]
