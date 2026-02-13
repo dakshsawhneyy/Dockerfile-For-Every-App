@@ -11,6 +11,7 @@ COPY . .
 # dotnet publish — Compiles the app and prepares it for deployment.|| -c Release means use the Release build configuration || -o /app/publish means output the compiled files into /app/publish
 RUN dotnet publish -c Release -o /app/publish
 
+
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 
 WORKDIR /app
