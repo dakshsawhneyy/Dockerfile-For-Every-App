@@ -18,6 +18,7 @@ RUN ./gradlew installDist --no-daemon
 # Stage 2
 FROM eclipse-temurin:21-jre-alpine
 
+
 WORKDIR /app
 
 # only copy hipstershop instead of whole app
