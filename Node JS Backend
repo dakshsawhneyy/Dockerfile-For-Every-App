@@ -1,23 +1,22 @@
-FROM node:20 AS builder
+# Stage 1: Build
+FROM node:18 AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install
 
-COPY . .
+COPY app.js app.js
 
-# Stage 2
-FROM node:20-alpine
-
+# Stage 2: Production
+FROM node:18-alpine
 WORKDIR /app
 
-# Copy only production files
-COPY --from=builder /app/node_modules ./node_modules
-# copy specific files like server.js
-COPY --from=builder /app/*.js ./   
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app /app
 
-EXPOSE 7000
+# Creating a non root user
+RUN addgroup appgroup && adduser -S appuser -G appgroup
+USER appuser
 
-CMD ["node", "server.js"]
+# Running the Application
+CMD ["node", "app.js"]
